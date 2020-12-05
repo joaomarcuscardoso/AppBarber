@@ -47,4 +47,8 @@ export const LocationFinder = styled.TouchableOpacity`
   width:24px;
   height:24px;
 `;
+export const LocationIcon = styled.ActivityIndicator`
+  margin-top:50px;
+`;
+
 
