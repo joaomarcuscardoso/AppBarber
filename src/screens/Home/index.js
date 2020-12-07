@@ -69,6 +69,7 @@ export default () => {
   const getBarbers = async ()  => {
     setLoading(true);
     setList([]);
+   
 
     let lat = null;
     let lng = null;

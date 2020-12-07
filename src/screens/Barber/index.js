@@ -6,6 +6,16 @@ import Swiper from 'react-native-swiper';
 
 /* Components */
 import Stars from '../../components/Stars';
+import BarberModal from '../../components/BarberModal';
+
+/* Api */
+import Api from '../../Api';
+/* Icon */
+import FavoriteFullIcon from '../../assets/favorite_full.svg';
+import FavoriteIcon from '../../assets/favorite.svg';
+import BackIcon from '../../assets/back.svg';
+import NavPrevIcon from '../../assets/nav_prev.svg';
+import NavNextIcon from '../../assets/nav_next.svg'
 
 import { 
   Container,
@@ -44,13 +54,6 @@ import {
   TestimonialBody,
 } from './styles';
 
-import Api from '../../Api';
-/* Icon */
-import FavoriteIcon from '../../assets/favorite.svg';
-import BackIcon from '../../assets/back.svg';
-import NavPrevIcon from '../../assets/nav_prev.svg';
-import NavNextIcon from '../../assets/nav_next.svg'
-
 export default () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -62,6 +65,9 @@ export default () => {
     stars:route.params.stars
   });
   const [loading, setLoading] = useState(false);
+  const [favorited, setFavorited] = useState(false);
+  const [selectedService, setSelectService] =  useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(()=> {
     const getBarberInfo = async () => {
@@ -70,6 +76,7 @@ export default () => {
       let json = await Api.getBarber(userInfo.id);
       if(json.error == "") {
         setUserInfo(json.data);
+        setFavorited(json.data.favorited);
       } else {
         alert("Erro: "+json.error);
       }
@@ -81,6 +88,17 @@ export default () => {
 
   const handleBackButton = () => {
     navigation.goBack();
+  }
+
+  const handleFavClick = () => {
+    setFavorited(!favorited);
+    Api.setFavorite(userInfo.id);
+
+  }
+
+  const handleServiceChoose = (key) => {
+    setSelectService(key);
+    setShowModal(true);
   }
 
   return (
@@ -112,8 +130,14 @@ export default () => {
               <UserInfoName>{userInfo.name}</UserInfoName>
               <Stars strars={userInfo.stars} showNumber={true} />
             </UserInfo>
-            <UserFavButton>
-              <FavoriteIcon width="24" height="24" fill="#ff0000" />
+            <UserFavButton  onPress={handleFavClick} >
+              {favorited ? 
+              <FavoriteFullIcon width="24" height="24" fill="#ff0000" />
+              :
+              <FavoriteIcon width="24" height="24" fill="#ff0000" />             
+              
+              }
+
             </UserFavButton>
           </UserInfoArea>
           {loading && 
@@ -127,9 +151,9 @@ export default () => {
               <ServiceItem key={key}>
                 <ServiceInfo>
                   <ServiceName>{item.name}</ServiceName>
-                  <ServicePrice>R$ {item.price}</ServicePrice>
+                  <ServicePrice>R$ {item.price.toFixed(2)}</ServicePrice>
                 </ServiceInfo>
-                <ServiceChooseButton>
+                <ServiceChooseButton onPress={()=>handleServiceChoose(key)}>
                   <ServiceChooseBtnText>Agendar</ServiceChooseBtnText>
                 </ServiceChooseButton>
 
@@ -157,13 +181,23 @@ export default () => {
                     </TestimonialItem>
                   ))}
                 </Swiper>
+
             </TestimonialArea>
           }
         </PageBody>
+
+        <BarberModal 
+            show={showModal} 
+            setShow={setShowModal}
+            user={userInfo}
+            service={selectedService}
+          />
+
         <BackButton onPress={handleBackButton}>
           <BackIcon width="44" height="44" fill="#ffffff" />
-        </BackButton>
-        
+        </BackButton>      
+
+
       </Scroller>
     </Container>
   );
